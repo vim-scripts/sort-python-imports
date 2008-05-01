@@ -1,0 +1,9 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=2225
+
+Keep your imports tidy!
+This script allows you to sort python imports easlily.
+
+Use :PyFixImports, command to fix imports in the beginning of currently edited file.                                                 
+You can also use visual mode to select range of lines and then use <C-i> to sort imports in those lines.
+
+Needs vim compiled with python support!
