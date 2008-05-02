@@ -1,7 +1,7 @@
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " sort_python_imports.vim - sorts python imports alphabetically
 " Author: Krzysiek Goj <bin-krzysiek#at#poczta.gazeta.pl>
-" Version: 1.0
+" Version: 1.1
 " Last Change: 2008-05-02
 " URL: http://tbw13.blogspot.com
 " Requires: Python and Vim compiled with +python option
@@ -14,6 +14,10 @@
 " You can also use visual mode to select range of lines and then
 " use <C-i> to sort imports in those lines.
 "
+" Changelog:
+"  1.1 - bugfix: from foo.bar import baz
+"  1.0 - initial upload
+"
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 if !has('python')
     s:ErrMsg( "Error: Required vim compiled with +python" )
@@ -25,7 +29,7 @@ import vim
 import re
 
 __global_import_re = re.compile('(?P<indent>\s*)import\s(?P<items>[^#]*)(?P<comment>(#.*)?)')
-__from_import_re = re.compile('(?P<indent>\s*)from\s+(?P<module>\w*)\s+import\s(?P<items>[^#]*)(?P<comment>(#.*)?)')
+__from_import_re = re.compile('(?P<indent>\s*)from\s+(?P<module>\S*)\s+import\s(?P<items>[^#]*)(?P<comment>(#.*)?)')
 __boring_re = re.compile('\s*(#.*)?$')
 __endl_re = re.compile('\n?$')
 
