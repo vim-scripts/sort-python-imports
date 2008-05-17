@@ -15,6 +15,8 @@
 " use <C-i> to sort imports in those lines.
 "
 " Changelog:
+"  1.2 - bugfix: from foo import (bar, baz)
+"        Now requires only python 2.3 (patch from Konrad Delong)
 "  1.1 - bugfix: from foo.bar import baz
 "  1.0 - initial upload
 "
@@ -27,11 +29,18 @@ endif
 python << EOF
 import vim
 import re
+from sets import Set
 
 __global_import_re = re.compile('(?P<indent>\s*)import\s(?P<items>[^#]*)(?P<comment>(#.*)?)')
 __from_import_re = re.compile('(?P<indent>\s*)from\s+(?P<module>\S*)\s+import\s(?P<items>[^#]*)(?P<comment>(#.*)?)')
 __boring_re = re.compile('\s*(#.*)?$')
 __endl_re = re.compile('\n?$')
+
+def sorted(l, key=lambda x: x):
+    l = map(lambda x: (key(x), x), list(l))
+    l.sort()
+    l = map(lambda pair: pair[1], l)
+    return l
 
 
 def is_global_import(line):
@@ -71,9 +80,11 @@ def _split_import(regex, line):
     imports = regex.match(line)
     if not imports:
         raise ValueError, 'this line isn\'t an import'
-    indent, items, comment = (imports.groupdict()[name] for name in 'indent items comment'.split())
+    indent, items, comment = map(lambda name: imports.groupdict()[name], 'indent items comment'.split())
     module = imports.groupdict().get('module')
-    return module, set(item.strip() for item in items.split(',')), make_template(indent, comment)
+    if items.startswith('(') and items.endswith(')'):
+        items = items[1:-1]
+    return module, Set(map(lambda item: item.strip(), items.split(','))), make_template(indent, comment)
 
 
 def split_globals(line):
@@ -133,7 +144,9 @@ def fixed(lines):
         if is_global_import(line): return 2
         if is_from_import(line): return 1
         if is_boring(line): return 0
-    return sorted([repair_any(line) for line in lines if line.strip()], key=lambda x: (-rank(x), x.upper()))
+    lines = filter(lambda line: line.strip(), lines)
+    lines = map(lambda line: repair_any(line), lines)
+    return sorted(lines, key=lambda x: (-rank(x), x.upper()))
 
 
 def fix_safely(lines):
